@@ -11,9 +11,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
         implements wAttr {
 
         id!: wAttr["id"];
+        referenceNumber!: wAttr["referenceNumber"];
         subject!: wAttr["subject"];
         workflowType!: wAttr["workflowType"];
         priority!: wAttr["priority"];
+        dueDate!: wAttr["dueDate"];
         // creationDate!: wAttr["creationDate"];
         // updateDate!: wAttr["updateDate"];
 
@@ -48,6 +50,13 @@ module.exports = (sequelize: any, DataTypes: any) => {
             allowNull: false,
             autoIncrement: true,
         },
+        referenceNumber: {
+            // Human-readable unique tracking number, e.g. "MTS/2026/00001".
+            // Nullable so pre-existing rows stay valid (MySQL allows multiple NULLs in a unique index).
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true,
+        },
         subject: {
             type: DataTypes.STRING, // default is VARCHAR(255)
             allowNull: false,
@@ -77,6 +86,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
             ],
             defaultValue: wPriority.MEDIUM,
             allowNull: false,
+        },
+        dueDate: {
+            // Optional deadline for the mail; used by the overdue-alert engine.
+            type: DataTypes.DATE, // DATETIME for mysql
+            allowNull: true,
         },
         // creationDate: {
         //     type: DataTypes.DATE, // DATETIME for mysql

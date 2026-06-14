@@ -294,7 +294,7 @@ const SideDrawer = ({ isOpen, onOpen, onClose }: Props) => {
                 </Box>
 
                 <Text fontSize="2xl">
-                    Flawless Chat
+                    Messages
                 </Text>
 
 

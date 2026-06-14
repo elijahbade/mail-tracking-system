@@ -10,8 +10,9 @@ import { myErrorHandler } from "./middlewares/errorHandlers"
 import colors from "colors"; //for coloring the console (terminal)
 import filesConfig from "./config/attachment";
 // ------------------------- Socket.io -------------------------
-// import io from "socket.io"; 
-import { Server } from "socket.io";
+import { initSocket } from "./socket";
+// ------------------------- Background jobs -------------------------
+import { startOverdueJob } from "./jobs/overdueJob";
 
 
 const app: Application = express();
@@ -142,82 +143,14 @@ db.sequelize
             console.log(colors.bgYellow.black(`Server running on port ${port}`));
             console.log(colors.bgGreen.black(`connected to Database: ${config.development.database}`));
 
-            // console.log("Now I will instantiate of Server class");
+            // Initialise the shared Socket.io server (chat + mail notifications).
+            // The instance is reachable elsewhere via getIO() from ./socket.
+            const io = initSocket(server);
+            app.set("io", io);
 
-            const io = new Server(server, {
-                pingTimeout: 20000, //waits 20seconds. If no one sends something, it closes the connection to save the bandwidth.
-                cors: {
-                    origin: "http://localhost:3000",
-                    // methods: ["GET", "POST"],
-                }
-            });
-            // console.log(server);
-            // console.log("Now will wait for connection");
-
-            io.on("connection", (socket) => {
-                console.log(
-                    colors.bgGreen.black(`CONNECTION: User has connected to socket: ${socket.id}`)
-                );
-
-                // This will take the user data from frontend: 👇
-                socket.on("setup", (userData: any) => {
-                    //create a new room with the id of user data.
-                    // This room will be exclusive to this user only:
-                    socket.join(userData.employeeId);
-                    console.log(
-                        colors.bgWhite.black(`SETUP: Joined user whose id = ${userData.employeeId}`)
-                    );
-                    socket.emit("connected"); //inform the frontend side that the user 
-                });
-
-                // Now the user will join a specific room/channel/chat with other people
-                // Either Direct channel (2 persons) or group channel (more than 2):
-                socket.on("join chat", (room) => {
-                    socket.join(room);
-                    console.log(
-                        colors.bgBlue.black(`JOIN CHAT: User Joined room: ${room}`)
-                    );
-                });
-
-                // When there is a user typing, inform all channel's members:
-                socket.on("typing", (channelId) => socket.in(channelId).emit("typing"));
-                socket.on("stop typing", (channelId) => socket.in(channelId).emit("stop typing"));
-
-                socket.on("new message", (data) => {
-                    let { newMessageReceived, targetChat } = data;
-                    if (!targetChat.members) return console.log("targetChat.members not defined");
-
-                    // Emit the message to all users inside the room:
-                    targetChat.members.forEach((member: any) => {
-                        // Don't send the message for yourself:
-                        if (member.memberId == newMessageReceived.senderId) return;
-
-                        // socket.in(member.memberId) ==> Targets the member's room when broadcasting.
-                        socket.in(member.memberId).emit("message received", newMessageReceived);
-                    });
-                });
-
-                socket.off("setup", (userData: any) => {
-                    // socket.off() is alias for emitter.removeListener()
-                    console.log(
-                        colors.red(`User disconnected from socket: ${socket.id}`)
-                    );
-                    socket.leave(userData?.employeeId)
-                });
-
-                // socket.on("disconnect", () => {
-                //     console.log("User Disconnected", socket.id);
-                // });
-            });
-            // ------------ End io.on() -----------------------------
+            // Start the background job that scans for overdue mail and alerts recipients.
+            startOverdueJob();
         });
-
-        // createPositions();
-        // createJobTitles();
-        // createClassifications();
-        // populateJunctionTable();
-        // createConsigneesGroups();
-        // createConsigneesGroupsMembers();
     })
     .catch((err: any) => {
         console.log(err);

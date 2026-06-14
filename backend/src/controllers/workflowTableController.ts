@@ -119,7 +119,7 @@ export const populateTable = async (req: Request, res: Response, next: NextFunct
                 [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                 [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
             ],
-            attributes: ["id", "subject", "workflowType", "priority"],
+            attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
             raw: true, //this will make the result not nested 😁
             limit: rowsPerPage,
             offset: page * rowsPerPage,
@@ -354,7 +354,7 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,
@@ -412,7 +412,7 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,
@@ -460,7 +460,7 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,
@@ -493,7 +493,7 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,
@@ -524,7 +524,7 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,
@@ -547,12 +547,12 @@ export const searchBy = async (req: Request, res: Response, next: NextFunction) 
                         },
                         attributes: ["empPositionId", "isSeen", "isPinned", "createdAt", "actionId"]
                     }],
-                    where: { id: workflowSerial },
+                    where: { referenceNumber: { [Op.like]: `%${workflowSerial}%` } },
                     order: [
                         [Sequelize.col('Workflow_Participants.isPinned'), "DESC"],
                         [Sequelize.col('Workflow_Participants.createdAt'), "DESC"],
                     ],
-                    attributes: ["id", "subject", "workflowType", "priority"],
+                    attributes: ["id", "referenceNumber", "subject", "workflowType", "priority", "dueDate"],
                     raw: true, //this will make the result not nested 😁
                     limit: rowsPerPage,
                     offset: page * rowsPerPage,

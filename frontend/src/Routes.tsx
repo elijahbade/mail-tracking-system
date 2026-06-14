@@ -29,8 +29,8 @@ import CreateWorkflow from './components/Workflow/CreateWorkflow/CreateWorkflow'
 import WorkflowActionsStack from "./components/Workflow/Actions/WorkflowActionsStack";
 // ----------- Workflow Tables --------------------------
 import InboxPage from "./components/Workflow/TablesViews/InboxPage";
-import CcPage from "./components/Workflow/TablesViews/CcPage";
-import FollowupPage from "./components/Workflow/TablesViews/FollowupPage";
+import CcPage from "./components/Workflow/TablesViews/CCPage";
+import FollowupPage from "./components/Workflow/TablesViews/FollowUpPage";
 import ArchivePage from "./components/Workflow/TablesViews/ArchivePage";
 // ----------- Chat --------------------------
 import ChatAuth from "./components/Chat/ChatAuth";

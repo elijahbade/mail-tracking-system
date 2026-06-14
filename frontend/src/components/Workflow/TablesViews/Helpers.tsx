@@ -46,10 +46,27 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
                 </Typography>
             ) : (
                 <Typography
-                    sx={{ flex: '1 1 100%', textTransform: "uppercase" }}
-                    variant="h6"
+                    sx={{
+                        flex: '1 1 100%',
+                        fontFamily: "'Fraunces', Georgia, serif",
+                        fontWeight: 600,
+                        color: "primary.main",
+                        position: "relative",
+                        pb: 0.5,
+                        "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            left: 0,
+                            bottom: 0,
+                            width: 44,
+                            height: 3,
+                            borderRadius: 2,
+                            backgroundColor: "secondary.main",
+                        },
+                    }}
+                    variant="h5"
                     id="tableTitle"
-                    component="div"
+                    component="h1"
                 >
                     {tableCaption}
                 </Typography>

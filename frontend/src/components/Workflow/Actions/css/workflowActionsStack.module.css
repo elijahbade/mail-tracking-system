@@ -44,14 +44,26 @@
 }
 
 .workflow-info {
-    padding-left: 10px;
+    padding: 20px 26px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #1B3A5B 0%, #0B2545 100%);
+    border-bottom: 3px solid #C8A24B;
+    border-radius: 16px;
+    color: #fff;
+    box-shadow: 0 12px 34px rgba(11, 37, 69, 0.18);
 }
-
-/* .workflow-info p {
-} */
+.workflow-info p {
+    color: #C8A24B;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
 .workflow-info h3 {
-    margin: 10px 0;
-    font-size: 1.8rem;
+    margin: 6px 0 0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.7rem;
+    color: #fff;
 }
 
 .summary {

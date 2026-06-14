@@ -160,11 +160,17 @@ const WorkflowActionsStack = () => {
                         <>
                             <div className={classes["workflow-info"]}>
                                 <p>
-                                    {workflowInfo.workflowType} - {workflowInfo.id}
+                                    {workflowInfo.workflowType}
+                                    {workflowInfo.referenceNumber ? ` — Ref. No: ${workflowInfo.referenceNumber}` : ` - ${workflowInfo.id}`}
                                 </p>
                                 <h3>
                                     {workflowInfo.subject}
                                 </h3>
+                                {workflowInfo.dueDate && (
+                                    <p style={{ color: "#d32f2f", fontWeight: 600 }}>
+                                        Due: {new Date(workflowInfo.dueDate).toLocaleString()}
+                                    </p>
+                                )}
                             </div>
                             <section className={classes.actionsContainer}>
                                 {workflowActions

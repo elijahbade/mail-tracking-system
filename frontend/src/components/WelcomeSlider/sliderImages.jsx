@@ -5,18 +5,18 @@ import Img3 from "./assets/img3.jpg";
 
 const images = [
   {
-    title: "WELCOME TO RATOON",
-    description: "Ready to use it? ",
+    title: "Mail Tracking & Management System",
+    description: "Register, route, and track every piece of official correspondence.",
     urls: Img1,
   },
   {
-    title: "What is Ratoon for?",
-    description: "A place to communicate with your colleagues in an efficient and easy way",
+    title: "Never lose a letter again",
+    description: "Log incoming and outgoing mail, assign officers, and follow each item end to end.",
     urls: Img2,
   },
   {
-    title: "Why to use it?",
-    description: "One of the most flexible websites",
+    title: "Accountable & on time",
+    description: "Automatic reference numbers, real-time alerts, and overdue reminders keep work moving.",
     urls: Img3,
   },
   // {

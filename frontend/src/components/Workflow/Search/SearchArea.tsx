@@ -83,7 +83,7 @@ const SearchArea = (
 
   // const [folder, setFolder] = useState<FolderType>(FolderType.All);
   const [keyword, setKeyword] = useState<string>("");
-  const [serial, setSerial] = useState<number>(0);
+  const [serial, setSerial] = useState<string>("");
   const [workflowType, setWorkflowType] = useState<WorkflowType>(WorkflowType.INTERNAL_CORRESPONDENCE);
   const [workflowPriority, setWorkflowPriority] = useState<WorkflowPriority>(WorkflowPriority.MEDIUM);
   // ------------- Search by Employee ----------------------------------
@@ -140,7 +140,7 @@ const SearchArea = (
     setFilterPayload({ folder, keyword });
   }
   const handleSerial = (e: ChangeEvent<HTMLInputElement>) => {
-    const serial = +e.target.value;
+    const serial = e.target.value; // reference number is a string, e.g. "MTS/2026/00001"
     setSerial(serial);
     console.log(serial);
 
@@ -209,7 +209,7 @@ const SearchArea = (
 
     setFolder(FolderType.Inbox);
     setKeyword("");
-    setSerial(0);
+    setSerial("");
     setEmpPosId(-1);
     setDateFrom(new Date());
     setDateTo(new Date());
@@ -257,7 +257,7 @@ const SearchArea = (
           onChange={handleFilterByChange}
         >
           <MenuItem value={FilterByOptions.Keyword}>Keyword</MenuItem>
-          <MenuItem value={FilterByOptions.WorkflowSerial}>Workflow's Serial</MenuItem>
+          <MenuItem value={FilterByOptions.WorkflowSerial}>Reference Number</MenuItem>
           <MenuItem value={FilterByOptions.WorkflowType}>Workflow's Type</MenuItem>
           <MenuItem value={FilterByOptions.WorkflowPriority}>Workflow's Priority</MenuItem>
           <MenuItem value={FilterByOptions.Employee}>Specific Employee</MenuItem>
@@ -277,14 +277,14 @@ const SearchArea = (
         />
 
       )}
-      {/* -------------- TextField for "Workflow's Serial" ------------------- */}
+      {/* -------------- TextField for "Reference Number" ------------------- */}
       {filterBy === FilterByOptions.WorkflowSerial && (
         <TextField
           className={classes["visible-field"]}
           id="serial-textfield"
-          type="number"
-          InputProps={{ inputProps: { min: 0 } }}
-          label="Workflow's Serial"
+          type="text"
+          label="Reference Number"
+          placeholder="e.g. MTS/2026/00001"
           value={serial}
           onChange={handleSerial}
         />

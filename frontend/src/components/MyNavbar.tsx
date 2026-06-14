@@ -1,5 +1,4 @@
 import * as React from 'react';
-import imgLogo from "../logo.png";
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -21,6 +20,11 @@ import AdbIcon from '@mui/icons-material/Adb';
 import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined';
+// ---------------------- Real-time notifications ------------------------
+import io, { Socket } from "socket.io-client";
+import NotificationBadge, { Effect } from "react-notification-badge";
 // ---------------------- React-Icons ------------------------
 import { FaMailchimp } from "react-icons/fa";
 import { IoLogoReact } from "react-icons/io5";
@@ -35,6 +39,8 @@ import { handleLogout } from "./Auth/api/authApi";
 // ------------------ Redux ---------------------------
 import { IEmployeePositionObj, LoginState, logoutUser } from "../store/slices/loginSlice";
 import { setSnackbar, ISeverity } from "../store/slices/snackbarSlice";
+import { addMailNotification, removeMailNotification } from "../store/slices/notificationSlice";
+import { RootState } from "../store/index";
 import { useDispatch, useSelector } from 'react-redux';
 // ------------------ My Custom Hook to return the login state: ---------------------------
 import useAuth from '../store/hooks/useAuth';
@@ -49,6 +55,10 @@ const settings = [
     { label: "Profile", link: "update-employee-info" },
     { label: "Dashboard", link: "" },
 ];
+
+// Socket endpoint reused for app-wide mail/overdue notifications (mirrors SingleChat.tsx)
+const NOTIF_ENDPOINT = process.env.REACT_APP_SERVER || "ws://localhost:5000/";
+let notifSocket: Socket;
 // const allEmployeePositions = ["Prof. Assistant", "Head of CSE Dep."]
 
 
@@ -60,16 +70,38 @@ export default function MenuAppBar() {
     // const authState:LoginState = useSelector((state: RootState) => state.login);
     const authState: LoginState = useAuth(); //returns `state.login` from our redux store
 
+    const mailNotifications: any[] = useSelector((state: RootState) => state.notification.mailNotifications);
+
     React.useEffect(() => {
         getEmployeeCurrentPosition();
         getEmployeeAvatar();
     }, [authState])
 
+    // ---- App-wide real-time mail notifications (works on every page, not just chat) ----
+    React.useEffect(() => {
+        if (!authState?.user?.employeeId) return;
+        notifSocket = io(NOTIF_ENDPOINT);
+        notifSocket.emit("setup", authState.user);
+        notifSocket.on("mail notification", (n: any) => dispatch(addMailNotification({ ...n, kind: "mail" })));
+        notifSocket.on("overdue notification", (n: any) => dispatch(addMailNotification({ ...n, kind: "overdue" })));
+        return () => { notifSocket?.disconnect(); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authState?.user?.employeeId]);
+
     const [userAvatar, setUserAvatar] = React.useState<string | null>(null);
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
     const [anchorElSwitchPosition, setAnchorElSwitchPosition] = React.useState<null | HTMLElement>(null);
+    const [anchorElNotif, setAnchorElNotif] = React.useState<null | HTMLElement>(null);
     const [employeeCurrentPosition, setEmployeeCurrentPosition] = React.useState<IEmployeePositionObj>({ id: -1, title: "Invalid" })
+
+    const handleOpenNotifMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElNotif(event.currentTarget);
+    const handleCloseNotifMenu = () => setAnchorElNotif(null);
+    const handleNotifClick = (notif: any, index: number) => {
+        handleCloseNotifMenu();
+        dispatch(removeMailNotification(index));
+        if (notif?.workflowId) navigate(`/actions/${notif.workflowId}`);
+    };
 
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -163,41 +195,50 @@ export default function MenuAppBar() {
                     justifyContent: "space-between",
                 }}
             >
-                {/* -------------------- LOGO --------------------- */}
+                {/* -------------------- BRAND --------------------- */}
                 <section
                     style={{ display: "flex", alignItems: "center" }}
                 >
-                    {/* <IoLogoReact
-                        style={{ display: "flex", marginRight: "10px", fontSize: "2.3rem" }}
-                    />
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="a"
-                        href="/"
-                        sx={{
-                            mr: 2,
-                            // display: { xs: 'none', md: 'flex' },
-                            display: "flex",
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        RATOON
-                    </Typography> */}
-                    {/* ---------- Sondos Logo ----------- */}
-
                     <span
-                        style={{ cursor: "pointer", }}
+                        style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                        onClick={() => navigate("/")}
                     >
-                        <img
-                            src={imgLogo}
-                            alt="Logo"
-                            onClick={() => navigate("/")}
-                        />
+                        {/* Gold mail badge as the brand mark */}
+                        <Box
+                            sx={{
+                                width: 42, height: 42, borderRadius: "12px",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                background: "linear-gradient(135deg, #C8A24B 0%, #A07F2E 100%)",
+                                color: "#061A33",
+                                boxShadow: "0 6px 16px rgba(200,162,75,0.35)",
+                            }}
+                        >
+                            <MarkEmailReadOutlinedIcon />
+                        </Box>
+                        <Box sx={{ ml: 1.5, display: { xs: "none", sm: "block" }, lineHeight: 1 }}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'Fraunces', Georgia, serif",
+                                    fontWeight: 600,
+                                    fontSize: "1.15rem",
+                                    color: "#fff",
+                                    lineHeight: 1.05,
+                                }}
+                            >
+                                Mail Tracking
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: "0.62rem",
+                                    letterSpacing: "0.28em",
+                                    textTransform: "uppercase",
+                                    color: "#C8A24B",
+                                    fontWeight: 700,
+                                }}
+                            >
+                                Management System
+                            </Typography>
+                        </Box>
                     </span>
                 </section>
                 {/* -------------------- End LOGO --------------------- */}
@@ -244,6 +285,49 @@ export default function MenuAppBar() {
                 <Box
                     sx={{ display: "flex" }}
                 >
+                    {/* ---------- Mail Notifications Bell --------- */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Tooltip title="Mail notifications">
+                            <IconButton onClick={handleOpenNotifMenu} sx={{ color: "white" }}>
+                                <NotificationBadge
+                                    count={mailNotifications?.length}
+                                    effect={Effect.SCALE}
+                                />
+                                <NotificationsIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Menu
+                            sx={{ mt: '45px' }}
+                            id="mail-notifications-menu"
+                            anchorEl={anchorElNotif}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            keepMounted
+                            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            open={Boolean(anchorElNotif)}
+                            onClose={handleCloseNotifMenu}
+                        >
+                            {!mailNotifications.length && (
+                                <MenuItem disabled sx={{ width: "300px" }}>
+                                    <Typography textAlign="center">No new mail notifications</Typography>
+                                </MenuItem>
+                            )}
+                            {mailNotifications.map((notif: any, index: number) => (
+                                <MenuItem
+                                    key={index}
+                                    sx={{ width: "320px", whiteSpace: "normal" }}
+                                    onClick={() => handleNotifClick(notif, index)}
+                                >
+                                    <Typography variant="body2">
+                                        {notif.kind === "overdue"
+                                            ? `⏰ Overdue: ${notif.referenceNumber || ""} — ${notif.subject || ""}`
+                                            : `📩 New ${notif.actionType === "reply" ? "reply" : "mail"}: ${notif.referenceNumber || ""} — ${notif.subject || ""}`}
+                                    </Typography>
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
+                    {/* ---------- End Mail Notifications Bell --------- */}
+
                     {/* ---------- Switch Account (Current User Emp Positions) --------- */}
                     {/* ----- Make this visible only for users who have more than one position ---- */}
 

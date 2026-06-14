@@ -49,6 +49,7 @@ function CreateWorkflow() {
   const [workflowType, setWorkflowType] = useState<WorkflowType>(WorkflowType.INTERNAL_CORRESPONDENCE);
   const [workflowPriority, setWorkflowPriority] = useState<WorkflowPriority>(WorkflowPriority.MEDIUM);
   const [subject, setSubject] = useState<string>('');
+  const [dueDate, setDueDate] = useState<string>(''); // optional deadline (drives overdue alerts)
   const [recipients, setRecipients] = useState([]);
   const [cc, setCc] = useState([]);
   const [listOfConsignees, setListOfConsignees] = useState<Array<any>>([]);
@@ -94,7 +95,7 @@ function CreateWorkflow() {
       // ------------------ Creating New Workflow (Application/json) -----------------
       const richTextContent = draftToHtml(convertToRaw(richTextState.getCurrentContent()));
       const response = await createNewWorkflow({
-        workflowType, workflowPriority, subject, recipients, cc, richTextContent
+        workflowType, workflowPriority, subject, recipients, cc, richTextContent, dueDate
       }, dispatch);
       console.log(response?.data);
       const { newWorkflowId, newActionId } = response?.data;
@@ -115,6 +116,7 @@ function CreateWorkflow() {
       setWorkflowType(initialValues.workflowType);
       setWorkflowPriority(initialValues.workflowPriority);
       setSubject(initialValues.workflowSubject);
+      setDueDate("");
       setRecipients(initialValues.recipientsSelect);
       setCc(initialValues.ccSelect);
       setRichTextState(initialValues.richTextState);
@@ -131,7 +133,7 @@ function CreateWorkflow() {
       onSubmit={(e) => handleSubmit(e)}
     >
       <div className={classes.merge}>
-        <h1 className={classes["page-h1"]}>Create new workflow</h1>
+        <h1 className={classes["page-h1"]}>Register New Mail</h1>
         <FormFields
           workflowType={workflowType}
           setWorkflowType={setWorkflowType}
@@ -150,6 +152,20 @@ function CreateWorkflow() {
           ccIDS={ccIDS}
           setCcIDs={setCcIDs}
         />
+        {/* ---------- Optional Due Date (drives overdue alerts) ---------- */}
+        <div style={{ margin: "10px 0", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label htmlFor="workflow-due-date" style={{ fontWeight: 600 }}>
+            Due date (optional)
+          </label>
+          <input
+            id="workflow-due-date"
+            type="datetime-local"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            style={{ padding: "8px", fontSize: "1rem", maxWidth: "260px" }}
+          />
+        </div>
+
         <TextEditor
           richTextState={richTextState}
           setRichTextState={setRichTextState}

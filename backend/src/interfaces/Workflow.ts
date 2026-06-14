@@ -17,9 +17,11 @@ export enum WorkflowPriority {
 
 export interface WorkflowAttributes {
     id: number;
+    referenceNumber?: string; // human-readable tracking number, e.g. "MTS/2026/00001"
     subject: string;
     workflowType: WorkflowType;  //`type` is reserved keyword in TpyeScript
     priority: WorkflowPriority;
+    dueDate?: Date | null; // optional deadline; drives overdue alerts
     // creationDate: Date;
     // updateDate: Date;
 }

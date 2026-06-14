@@ -264,6 +264,11 @@ const WorkflowsTable = ({
                                             <span><GiPin style={{ fontSize: "1.3rem" }} /></span>
                                         </Tooltip>
                                     </TableCell>
+                                    {/* ---------- `Reference Number` Column ---------- */}
+                                    <TableCell
+                                        className={`${classes.tableHeaderCell}`}>
+                                        Ref. No.
+                                    </TableCell>
                                     {/* ---------- `Workflow's Subject` Column ---------- */}
                                     <TableCell
                                         className={`${classes.tableHeaderCell}`}>
@@ -363,6 +368,31 @@ const WorkflowsTable = ({
                                                 )}
                                             </TableCell>
                                             {/* --------- 📌End Pin Workflow Record --------- */}
+
+                                            {/* --------- Reference Number --------- */}
+                                            <TableCell
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(e) => handleRowClick(e, row)}
+                                                className={classes.alignLeft}
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    color="textSecondary"
+                                                    style={{ fontWeight: `${row.isSeen ? ("normal") : ("700")}`, whiteSpace: "nowrap" }}
+                                                >
+                                                    {row.referenceNumber || "—"}
+                                                </Typography>
+                                                {/* Overdue badge: due date passed and not yet opened */}
+                                                {row.dueDate && !row.isSeen && new Date(row.dueDate) < new Date() && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        style={{ color: "#d32f2f", fontWeight: 700 }}
+                                                    >
+                                                        OVERDUE
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+                                            {/* --------- End Reference Number --------- */}
 
                                             {/* --------- Workflow's Subject --------- */}
                                             <TableCell

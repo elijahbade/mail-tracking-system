@@ -93,7 +93,20 @@ const Aside = ({ collapsed, setCollapsed, toggled, handleToggleSidebar }) => {
                             />
                         </IconButton>
                     </Tooltip>
-                    {/* Ratoon system */}
+                    {!collapsed && (
+                        <span
+                            style={{
+                                marginLeft: "10px",
+                                fontFamily: "'Fraunces', Georgia, serif",
+                                fontWeight: 600,
+                                fontSize: "1.05rem",
+                                color: "#fff",
+                                letterSpacing: "0.02em",
+                            }}
+                        >
+                            MTMS
+                        </span>
+                    )}
                 </div>
             </SidebarHeader>
 

@@ -24,9 +24,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
             JobTitle.hasOne(models.Employee_Position, {
                 foreignKey: {
                     name: 'jobTitleId',
-                    // allowNull: false, 
+                    // allowNull: false,
                 },
-                onDelete: 'SET NULL',
+                // jobTitleId is NOT NULL (required) in Employee_Position, so it cannot be
+                // set to NULL on delete. Cascade instead, matching the employeeId FK.
+                onDelete: 'CASCADE',
                 onUpdate: 'CASCADE',
             })
         }

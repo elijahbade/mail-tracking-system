@@ -16,6 +16,7 @@ interface WParticipantsType {
     isSeen: Boolean;
     isPinned: Boolean;
     isArchived: Boolean;
+    overdueNotified: Boolean; // true once an overdue alert has been sent for this participant
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -32,6 +33,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         isSeen!: WParticipantsType["isSeen"];
         isPinned!: WParticipantsType["isPinned"];
         isArchived!: WParticipantsType["isArchived"];
+        overdueNotified!: WParticipantsType["overdueNotified"];
 
         static associate(models: any) {
             // define association here:
@@ -98,6 +100,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
             allowNull: false,
         },
         isArchived: {
+            type: DataTypes.BOOLEAN, // TINYINT(1)
+            defaultValue: false,
+            allowNull: false,
+        },
+        overdueNotified: {
             type: DataTypes.BOOLEAN, // TINYINT(1)
             defaultValue: false,
             allowNull: false,

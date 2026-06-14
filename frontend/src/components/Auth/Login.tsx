@@ -60,31 +60,36 @@ const Login = () => {
     // }, [errorMessage]);
 
     const paperStyle: any = {
-        // padding: "20px 20px",
-        padding: "30px 30px",
-        // height: "70vh",
-        // width: "300px",
-        // height: "400px",
-        width: "380px",
-        height: "460px",
+        padding: "44px 40px 36px",
+        width: "420px",
+        maxWidth: "92vw",
         margin: "0px auto",
-        background: "rgba(255, 255, 255, 0.8)",
+        background: "rgba(255, 255, 255, 0.97)",
+        backdropFilter: "blur(6px)",
         position: "relative",
         zIndex: "2",
-        borderRadius : '13px'
+        borderRadius: "20px",
+        border: "1px solid rgba(255,255,255,0.6)",
+        boxShadow: "0 30px 70px rgba(6,26,51,0.45)",
+        // gold hairline accent across the top of the card
+        borderTop: "3px solid #C8A24B",
     };
     const avatarStyle = {
-        backgroundColor: "#1bbd7e",
-        marginBottom: "6px"
+        background: "linear-gradient(135deg, #C8A24B 0%, #A07F2E 100%)",
+        color: "#061A33",
+        width: 60,
+        height: 60,
+        marginBottom: "14px",
+        boxShadow: "0 8px 20px rgba(200,162,75,0.4)",
     };
     const btnStyle = {
-        // margin: "12px 0"
-        margin: "15px 0"
+        marginTop: "22px",
+        paddingBlock: "11px",
+        fontSize: "1rem",
     };
     const txtFieldStyle = {
-        // marginBottom: "12px",
         textTransform: "none",
-        marginBottom: "15px"
+        marginBottom: "18px"
     };
     const errMsgStyle = {
         color: "red"
@@ -165,8 +170,24 @@ const Login = () => {
                     >
                         <Grid className={LoginCSS["paper-title"]}>
                             <Avatar style={avatarStyle}><LockOpenOutlinedIcon /></Avatar>
-
-                            <h2>Login</h2>
+                            <Typography
+                                variant="overline"
+                                sx={{ color: "secondary.dark", letterSpacing: "0.22em", fontWeight: 700 }}
+                            >
+                                Mail Tracking &amp; Management
+                            </Typography>
+                            <Typography
+                                variant="h4"
+                                sx={{ color: "primary.main", fontWeight: 600, mt: 0.5 }}
+                            >
+                                Welcome back
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                sx={{ color: "text.secondary", mt: 0.5, mb: 1 }}
+                            >
+                                Sign in to manage your correspondence
+                            </Typography>
                         </Grid>
                         {/* Formik will not call onSubmit() validationSchema is satisfied*/}
                         <Formik
@@ -177,13 +198,13 @@ const Login = () => {
                             {(props) => (
                                 <Form>
                                     <Field
-                                        // In order to tell Formik that I am using MUI, I have 
+                                        // In order to tell Formik that I am using MUI, I have
                                         // to write the as={} property and specify the MUI component's name:
                                         as={TextField}
                                         name="username"
-                                        label="username"
-                                        // placeholder="enter username"
-                                        variant="standard"
+                                        label="Username"
+                                        placeholder="name@institution.edu"
+                                        variant="outlined"
                                         fullWidth //will take fillWidth fo its container
                                         // required
                                         style={txtFieldStyle}
@@ -201,9 +222,9 @@ const Login = () => {
                                         as={TextField}
                                         type="password"
                                         name="password"
-                                        label="password"
-                                        // placeholder="enter password"
-                                        variant="standard"
+                                        label="Password"
+                                        placeholder="Enter your password"
+                                        variant="outlined"
                                         fullWidth //will take fillWidth fo its container
                                         // required
                                         style={txtFieldStyle}

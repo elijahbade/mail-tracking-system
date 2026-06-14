@@ -2,12 +2,14 @@ import { createSlice, current, PayloadAction } from '@reduxjs/toolkit'
 
 export interface NotificationState {
     test?: any,
-    notificationsList: any[],
+    notificationsList: any[], // chat message notifications (existing)
+    mailNotifications: any[], // workflow/mail + overdue notifications (new)
 }
 
 
 const initialState: NotificationState = {
-    notificationsList: []
+    notificationsList: [],
+    mailNotifications: [],
 }
 
 export const notificationSlice = createSlice({
@@ -24,11 +26,26 @@ export const notificationSlice = createSlice({
             // return {...state, notificationsList: [...state.notificationsList, payload]};
             return { ...state, notificationsList: payload };
         },
+        // ----- Mail (workflow + overdue) notifications -----
+        addMailNotification: (state: NotificationState, { payload }: any) => {
+            // newest first; avoid stacking exact duplicates of the same event
+            return { ...state, mailNotifications: [payload, ...state.mailNotifications] };
+        },
+        setMailNotifications: (state: NotificationState, { payload }: any) => {
+            return { ...state, mailNotifications: payload };
+        },
+        removeMailNotification: (state: NotificationState, { payload }: any) => {
+            // payload = index of the notification to remove
+            return {
+                ...state,
+                mailNotifications: state.mailNotifications.filter((_, i) => i !== payload),
+            };
+        },
     },
 });
 
 // ACTION CREATORS are generated for each case reducer function
-export const { setNotificationsList } = notificationSlice.actions;
+export const { setNotificationsList, addMailNotification, setMailNotifications, removeMailNotification } = notificationSlice.actions;
 //snackbarSlice.actions returns the `reducers: ` object, which contains all Action Creators
 
 

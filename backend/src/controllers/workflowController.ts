@@ -15,6 +15,8 @@ const { models } = db.sequelize; // returns object with all our models.
 import { Op } from "sequelize"
 
 import filesConfig from "../config/attachment";
+import { generateReferenceNumber } from "../utils/referenceNumber";
+import { notifyParticipants } from "../utils/notifyRecipients";
 
 
 const filesBlackList = ["exe"];
@@ -197,58 +199,82 @@ const appendMyCustomConsigneesGroups = async (req: Request, availableConsignees:
 export const createNewWorkflow = async (req: Request, res: Response, next: NextFunction) => {
     // console.log(req.body);
     // console.log(req.body);
-    const { workflowType, priority, subject, recipients, cc, richTextContent } = req.body;
+    const { workflowType, priority, subject, recipients, cc, richTextContent, dueDate } = req.body;
 
     // Remember that the middleware function "validateAccessToken"
     // has added a `req.user` entry to our request.
     // const { id, role, employeePositionId } = req.user; //id means accountId
 
     try {
-        // -------- Create New `Workflow` Record --------
-        const newWorkflow = await models.Workflow.create({
-            subject, workflowType, priority
-        });
+        // The whole creation (workflow + action + participants + reference number)
+        // runs in one transaction so a partial failure never leaves orphan rows
+        // and the per-year reference-number count stays consistent.
+        const { newWorkflow, newAction } = await db.sequelize.transaction(async (t: any) => {
+            const referenceNumber = await generateReferenceNumber(new Date().getFullYear(), t);
 
-        // -------- Create New `Action` Record --------
-        const newAction = await models.Action.create({
-            content: richTextContent,
-            workflowId: newWorkflow.id
-        });
+            // -------- Create New `Workflow` Record --------
+            const newWorkflow = await models.Workflow.create({
+                subject, workflowType, priority, referenceNumber,
+                dueDate: dueDate || null,
+            }, { transaction: t });
 
-        // -------- Create New `Workflow_Participant` Record for the SENDER --------
-        const newSender = await models.Workflow_Participant.create({
-            workflowId: newWorkflow.id,
-            actionId: newAction.id,
-            // empPositionId: req.user.employeePositionId,
-            empPositionId: req.header("employeeCurrentPositionId"),
-            actionType: ActionTypes.SENDER,
-            isSeen: true,
-        });
+            // -------- Create New `Action` Record --------
+            const newAction = await models.Action.create({
+                content: richTextContent,
+                workflowId: newWorkflow.id
+            }, { transaction: t });
 
-        // --- Now for each recipient in the list, create new `Workflow_Participant` Record --
-        for (let i = 0; i < recipients.length; i++) {
-            const newRecipient = await models.Workflow_Participant.create({
+            // -------- Create New `Workflow_Participant` Record for the SENDER --------
+            await models.Workflow_Participant.create({
                 workflowId: newWorkflow.id,
                 actionId: newAction.id,
-                empPositionId: recipients[i].id,
-                actionType: ActionTypes.RECIPIENT
-            });
-        }
+                // empPositionId: req.user.employeePositionId,
+                empPositionId: req.header("employeeCurrentPositionId"),
+                actionType: ActionTypes.SENDER,
+                isSeen: true,
+            }, { transaction: t });
 
-        // --- Now for each CC in the list, create new `Workflow_Participant` Record --
-        for (let i = 0; i < cc.length; i++) {
-            const newCC = await models.Workflow_Participant.create({
+            // --- Now for each recipient in the list, create new `Workflow_Participant` Record --
+            for (let i = 0; i < recipients.length; i++) {
+                await models.Workflow_Participant.create({
+                    workflowId: newWorkflow.id,
+                    actionId: newAction.id,
+                    empPositionId: recipients[i].id,
+                    actionType: ActionTypes.RECIPIENT
+                }, { transaction: t });
+            }
+
+            // --- Now for each CC in the list, create new `Workflow_Participant` Record --
+            for (let i = 0; i < cc.length; i++) {
+                await models.Workflow_Participant.create({
+                    workflowId: newWorkflow.id,
+                    actionId: newAction.id,
+                    empPositionId: cc[i].id,
+                    actionType: ActionTypes.CC
+                }, { transaction: t });
+            }
+
+            return { newWorkflow, newAction };
+        });
+
+        // ---- Notify recipients + CC in real time (after commit so we never
+        //      reference rows that may have rolled back) ----
+        await notifyParticipants({
+            empPositionIds: [...recipients, ...cc].map((p: any) => p.id),
+            payload: {
                 workflowId: newWorkflow.id,
-                actionId: newAction.id,
-                empPositionId: cc[i].id,
-                actionType: ActionTypes.CC
-            });
-        }
+                referenceNumber: newWorkflow.referenceNumber,
+                subject: newWorkflow.subject,
+                actionType: "mail",
+                createdAt: newAction.createdAt,
+            },
+        });
 
         return res.json({
             message: "New Workflow created successfully",
             success: true,
             newWorkflowId: newWorkflow.id,
+            newReferenceNumber: newWorkflow.referenceNumber,
             newActionId: newAction.id,
         });
     }
@@ -737,6 +763,18 @@ export const createNewAction = async (req: Request, res: Response, next: NextFun
         });
         // Note: I updated the `subject` record with the same value just to make sequelize update the `updatedAt` column for this record. (I don't know how to update the date)
         // --------------------------------------------------------------------
+
+        // ---- Notify the recipients + CC of this new action in real time ----
+        await notifyParticipants({
+            empPositionIds: [...recipients, ...cc].map((p: any) => p.id),
+            payload: {
+                workflowId,
+                referenceNumber: workflowRecord.referenceNumber,
+                subject: workflowRecord.subject,
+                actionType: "reply",
+                createdAt: newAction.createdAt,
+            },
+        });
 
         return res.json({
             message: `New action added to this workflow`,

@@ -54,7 +54,7 @@ export const uploadNewWorkflowFiles = (payload: any) => {
 }
 
 export const createNewWorkflow = async (payload: any, dispatch: any): Promise<AxiosResponse<any, any> | undefined> => {
-    const { workflowType, workflowPriority, recipients, cc, subject, richTextContent } = payload;
+    const { workflowType, workflowPriority, recipients, cc, subject, richTextContent, dueDate } = payload;
 
     try {
         const response = await axiosInstance().post("workflow/create",
@@ -64,7 +64,8 @@ export const createNewWorkflow = async (payload: any, dispatch: any): Promise<Ax
                 subject,
                 recipients,
                 cc,
-                richTextContent
+                richTextContent,
+                dueDate: dueDate || null
             },
             {
                 headers: { 'Content-Type': "application/json" },
