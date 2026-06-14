@@ -1,0 +1,9 @@
+# Local-only scratch / context (do not commit)
+context.txt
+
+# Dependencies (also ignored per-folder)
+node_modules/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
